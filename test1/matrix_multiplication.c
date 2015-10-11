@@ -53,7 +53,7 @@ void multiply_two_arrays(int x, int n, int y, int size, int rank)
   {
     for(j = 0; j < n; j++)
     {
-      matrix1[i][j] = i + j; //initialize 1 to matrix1 for all processes
+      matrix1[i][j] = 1; //initialize 1 to matrix1 for all processes
     }
   }
 
@@ -61,7 +61,7 @@ void multiply_two_arrays(int x, int n, int y, int size, int rank)
   {
     for(j = 0; j < y; j++)
     {
-      matrix2[i][j] = (i + j) * 2;//initialize 2 to matrix2 for all processes
+      matrix2[i][j] = 2;//initialize 2 to matrix2 for all processes
     }
   }
   MPI_Barrier(MPI_COMM_WORLD);
@@ -115,6 +115,18 @@ void multiply_two_arrays(int x, int n, int y, int size, int rank)
     // printf("\nTime taken = %f seconds\n",result); //time taken
     printf("%d\ta[%d][%d]*[%d][%d]\t%f\n", size, x, n, n, y, result);
   }
+
+  // free memory
+  for(i = 0; i < x; i++)
+  {
+    free(matrix1[i]);
+    free(mat_res[i]);
+  }
+  for(i = 0; i < n; i++) free(matrix2[i]);
+  free(matrix1);
+  free(matrix2);
+  free(mat_res);
+
 }
 
 /**

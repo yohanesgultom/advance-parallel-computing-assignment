@@ -3,7 +3,7 @@
 #SBATCH -o matrix_multiplication_16_%j.out
 #SBATCH -n 16
 #SBATCH -p normal
-#SBATCH -t 00:15:00
+#SBATCH -t 01:00:00
 #SBATCH --mail-user=yohanes.gultom@ui.ac.id
 #SBATCH --mail-type=end
 ibrun ./matrix_multiplication.o matrix_multiplication.txt
