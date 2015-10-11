@@ -1,6 +1,6 @@
 #!/bin/bash
-#SBATCH -J matrix_multiplication_4_job
-#SBATCH -o matrix_multiplication_4_%j.out
+#SBATCH -J matrix_multiplication_8_job
+#SBATCH -o matrix_multiplication_8_%j.out
 #SBATCH -n 8
 #SBATCH -p normal
 #SBATCH -t 00:15:00
