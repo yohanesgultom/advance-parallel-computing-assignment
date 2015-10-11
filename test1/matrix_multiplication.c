@@ -121,12 +121,20 @@ void multiply_two_arrays(int x, int n, int y, int size, int rank)
   {
     free(matrix1[i]);
     free(mat_res[i]);
+    matrix1[i] = NULL;
+    mat_res[i] = NULL;
   }
-  for(i = 0; i < n; i++) free(matrix2[i]);
+  for(i = 0; i < n; i++)
+  {
+      free(matrix2[i]);
+      matrix2[i] = NULL;
+  }
   free(matrix1);
   free(matrix2);
   free(mat_res);
-
+  matrix1 = NULL;
+  matrix2 = NULL;
+  mat_res = NULL;
 }
 
 /**
