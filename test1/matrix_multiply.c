@@ -1,4 +1,5 @@
-#include <stdio.h>
+#include "stdio.h"
+#include "stdlib.h"
 #include "mpi.h"
 
 #define MASTER 0       /* id of the first process */
@@ -7,6 +8,7 @@
 
 MPI_Status status;
 
+// void printmatrix(int row, int col, int **matrix)
 void printmatrix(int row, int col, int matrix[row][col])
 {
     int i, j = 0;
@@ -33,11 +35,29 @@ void multiply_two_arrays(int NRA, int NCA, int NCB, int numworkers, int procid) 
     int a[NRA][NCA],   /* matrix A to be multiplied */
     b[NCA][NCB],   /* matrix B to be multiplied */
     c[NRA][NCB];   /* result matrix C */
+    // int **a, **b, **c;
     double tstart,
     tend;
 
+    // mallocs
+    // a = (int **)malloc(NRA * sizeof(int*));
+    // b = (int **)malloc(NCA * sizeof(int*)); // NRB == NCA
+    // c = (int **)malloc(NRA * sizeof(int*)); // NRC == NRA
+    // for(i = 0; i < NRA; i++)
+    // {
+    //   a[i] = (int *)malloc(NCA * sizeof(int));
+    //   c[i] = (int *)malloc(NCB * sizeof(int)); // NCC == NCB
+    // }
+    //
+    // for(i = 0; i < NCA; i++)  // NRB == NCA
+    // {
+    //     b[i]=(int *)malloc(NCB * sizeof(int));
+    // }
+
     /******* master process ***********/
     if (procid == MASTER) {
+
+        // inits
         for (i=0; i<NRA; i++)
         for (j=0; j<NCA; j++)
         a[i][j]= 1;
@@ -71,18 +91,18 @@ void multiply_two_arrays(int NRA, int NCA, int NCB, int numworkers, int procid) 
             count = rows*NCB;
             MPI_Recv(&c[offset][0],count,MPI_INT,source,mtype,MPI_COMM_WORLD, &status);
         }
+
         tend = MPI_Wtime();
-        // printmatrix(NRA, NCA, a);
-        // printmatrix(NCA, NCB, b);
-        // printmatrix(NRA, NCB, c);
         printf("%d\ta[%d][%d] x b[%d][%d]\t%lf\n", numworkers+1, NRA, NCA, NCA, NCB, (tend - tstart));
 
     } /* end of master */
 
     /************ worker process *************/
     if (procid > MASTER) {
+
         mtype = FROM_MASTER;
         source = MASTER;
+
         MPI_Recv(&offset,1,MPI_INT,source,mtype,MPI_COMM_WORLD,&status);
         MPI_Recv(&rows,1,MPI_INT,source,mtype,MPI_COMM_WORLD,&status);
         count = rows*NCA;
@@ -98,11 +118,33 @@ void multiply_two_arrays(int NRA, int NCA, int NCB, int numworkers, int procid) 
                 }
             }
         }
+
         mtype = FROM_WORKER;
         MPI_Send(&offset,1,MPI_INT,MASTER,mtype,MPI_COMM_WORLD);
         MPI_Send(&rows,1,MPI_INT,MASTER,mtype,MPI_COMM_WORLD);
         MPI_Send(&c,rows*NCB,MPI_INT,MASTER,mtype,MPI_COMM_WORLD);
+
     } /* end of worker */
+
+    // free matrices
+    // for(i = 0; i < NRA; i++)
+    // {
+    //   free(a[i]);
+    //   free(c[i]);
+    //   a[i] = NULL;
+    //   c[i] = NULL;
+    // }
+    // for(i = 0; i < NCA; i++)
+    // {
+    //     free(b[i]);
+    //     b[i] = NULL;
+    // }
+    // free(a);
+    // free(b);
+    // free(c);
+    // a = NULL;
+    // b = NULL;
+    // c = NULL;
 
 }
 
