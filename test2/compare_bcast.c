@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
     // printf("Data size = %d, Trials = %d\n", num_elements * (int)sizeof(int),
     //        num_trials);
     // printf("Avg my_bcast time = %lf\n", total_my_bcast_time / num_trials);
-    // printf("Avg MPI_Bcast time = %lf\n", total_mpi_bcast_time / num_trials);
+    // printf("Avg MPI_Bcast time = %lf\n", total_mpi_bcast_time / num_trials);    
     printf("my_bcast\t%d\t%d\t%lf\n", world_size, data_size, total_my_bcast_time / num_trials);
     printf("MPI_Bcast\t%d\t%d\t%lf\n", world_size, data_size, total_mpi_bcast_time / num_trials);
   }
