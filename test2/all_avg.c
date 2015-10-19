@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <assert.h>
-  
+
 // Creates an array of random numbers. Each number has a value from 0 - 1
 float *create_rand_nums(int num_elements) {
   float *rand_nums = (float *)malloc(sizeof(float) * num_elements);
@@ -39,6 +39,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
+  double process_time, comm_time = 0;
   int num_elements_per_proc = atoi(argv[1]);
   // Seed the random number generator to get different results each time
   srand(time(NULL));
@@ -65,31 +66,38 @@ int main(int argc, char** argv) {
 
   // Scatter the random numbers from the root process to all processes in
   // the MPI world
-  MPI_Scatter(rand_nums, num_elements_per_proc, MPI_FLOAT, sub_rand_nums,
-              num_elements_per_proc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+  if (world_rank == 0) process_time -= MPI_Wtime();
+  if (world_rank == 0) comm_time -= MPI_Wtime();
+  MPI_Scatter(rand_nums, num_elements_per_proc, MPI_FLOAT, sub_rand_nums, num_elements_per_proc, MPI_FLOAT, 0, MPI_COMM_WORLD);
+  if (world_rank == 0) comm_time += MPI_Wtime();
 
   // Compute the average of your subset
   float sub_avg = compute_avg(sub_rand_nums, num_elements_per_proc);
- 
+
   // Gather all partial averages down to all the processes
   float *sub_avgs = (float *)malloc(sizeof(float) * world_size);
   assert(sub_avgs != NULL);
+  if (world_rank == 0) comm_time -= MPI_Wtime();
   MPI_Allgather(&sub_avg, 1, MPI_FLOAT, sub_avgs, 1, MPI_FLOAT, MPI_COMM_WORLD);
+  if (world_rank == 0) comm_time += MPI_Wtime();
 
   // Now that we have all of the partial averages, compute the
   // total average of all numbers. Since we are assuming each process computed
   // an average across an equal amount of elements, this computation will
   // produce the correct answer.
   float avg = compute_avg(sub_avgs, world_size);
-  printf("Avg of all elements from proc %d is %f\n", world_rank, avg);
+  //printf("Avg of all elements from proc %d is %f\n", world_rank, avg);
 
   // Clean up
   if (world_rank == 0) {
-    free(rand_nums);
+     process_time += MPI_Wtime();
+     int total_elements = world_size * num_elements_per_proc;
+     printf("%d\t%d\t%lf\t%lf\n", world_size, total_elements, process_time, comm_time);
+     free(rand_nums);
   }
   free(sub_avgs);
   free(sub_rand_nums);
- 
+
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
 }

@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
-  double process_time, comm_time = 0;
+  double process_time, process_time_to_avg, comm_time = 0;
   int num_elements_per_proc = atoi(argv[1]);
   // Seed the random number generator to get different results each time
   srand(time(NULL));
@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
   if (world_rank == 0) comm_time -= MPI_Wtime();
   MPI_Scatter(rand_nums, num_elements_per_proc, MPI_FLOAT, sub_rand_nums, num_elements_per_proc, MPI_FLOAT, 0, MPI_COMM_WORLD);
   if (world_rank == 0) comm_time += MPI_Wtime();
+  if (world_rank == 0) process_time_to_avg -= MPI_Wtime();
 
   // Compute the average of your subset
   float sub_avg = compute_avg(sub_rand_nums, num_elements_per_proc);
@@ -95,8 +96,9 @@ int main(int argc, char** argv) {
     int total_elements = num_elements_per_proc * world_size;
     float original_data_avg = compute_avg(rand_nums, total_elements);
     //printf("Avg computed across original data is %f\n", original_data_avg);
-    process_time += MPI_Wtime();    
-    printf("%d\t%d\t%lf\t%lf\n", world_size, total_elements, process_time, comm_time);
+    process_time += MPI_Wtime();
+    process_time_to_avg += MPI_Wtime();
+    printf("%d\t%d\t%lf\t%lf\t%lf\n", world_size, total_elements, process_time, process_time_to_avg, comm_time);
   }
 
   // Clean up

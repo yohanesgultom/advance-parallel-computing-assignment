@@ -12,7 +12,7 @@
 #include <mpi.h>
 #include <math.h>
 #include <assert.h>
-  
+
 // Creates an array of random numbers. Each number has a value from 0 - 1
 float *create_rand_nums(int num_elements) {
   float *rand_nums = (float *)malloc(sizeof(float) * num_elements);
@@ -30,6 +30,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
+  double process_time, comm_time = 0;
   int num_elements_per_proc = atoi(argv[1]);
 
   MPI_Init(NULL, NULL);
@@ -54,8 +55,10 @@ int main(int argc, char** argv) {
   // Reduce all of the local sums into the global sum in order to
   // calculate the mean
   float global_sum;
-  MPI_Allreduce(&local_sum, &global_sum, 1, MPI_FLOAT, MPI_SUM,
-                MPI_COMM_WORLD);
+  if (world_rank == 0) process_time -= MPI_Wtime();
+  if (world_rank == 0) comm_time -= MPI_Wtime();
+  MPI_Allreduce(&local_sum, &global_sum, 1, MPI_FLOAT, MPI_SUM, MPI_COMM_WORLD);
+  if (world_rank == 0) comm_time += MPI_Wtime();
   float mean = global_sum / (num_elements_per_proc * world_size);
 
   // Compute the local sum of the squared differences from the mean
@@ -67,20 +70,23 @@ int main(int argc, char** argv) {
   // Reduce the global sum of the squared differences to the root process
   // and print off the answer
   float global_sq_diff;
-  MPI_Reduce(&local_sq_diff, &global_sq_diff, 1, MPI_FLOAT, MPI_SUM, 0,
-             MPI_COMM_WORLD);
+  if (world_rank == 0) comm_time -= MPI_Wtime();
+  MPI_Reduce(&local_sq_diff, &global_sq_diff, 1, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+  if (world_rank == 0) comm_time += MPI_Wtime();
 
   // The standard deviation is the square root of the mean of the squared
   // differences.
   if (world_rank == 0) {
-    float stddev = sqrt(global_sq_diff /
-                        (num_elements_per_proc * world_size));
-    printf("Mean - %f, Standard deviation = %f\n", mean, stddev);
+    int total_elements = num_elements_per_proc * world_size;
+    float stddev = sqrt(global_sq_diff / total_elements);
+    // printf("Mean - %f, Standard deviation = %f\n", mean, stddev);
+    process_time += MPI_Wtime();
+    printf("%d\t%d\t%lf\t%lf\n", world_size, total_elements, process_time, comm_time);
   }
 
   // Clean up
   free(rand_nums);
- 
+
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
 }

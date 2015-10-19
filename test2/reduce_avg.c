@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <assert.h>
-  
+
 // Creates an array of random numbers. Each number has a value from 0 - 1
 float *create_rand_nums(int num_elements) {
   float *rand_nums = (float *)malloc(sizeof(float) * num_elements);
@@ -29,6 +29,7 @@ int main(int argc, char** argv) {
     exit(1);
   }
 
+  double process_time, comm_time = 0;
   int num_elements_per_proc = atoi(argv[1]);
 
   MPI_Init(NULL, NULL);
@@ -43,6 +44,7 @@ int main(int argc, char** argv) {
   float *rand_nums = NULL;
   rand_nums = create_rand_nums(num_elements_per_proc);
 
+  if (world_rank == 0) process_time -= MPI_Wtime();
   // Sum the numbers locally
   float local_sum = 0;
   int i;
@@ -51,23 +53,25 @@ int main(int argc, char** argv) {
   }
 
   // Print the random numbers on each process
-  printf("Local sum for process %d - %f, avg = %f\n",
-         world_rank, local_sum, local_sum / num_elements_per_proc);
+  //printf("Local sum for process %d - %f, avg = %f\n", world_rank, local_sum, local_sum / num_elements_per_proc);
 
   // Reduce all of the local sums into the global sum
   float global_sum;
-  MPI_Reduce(&local_sum, &global_sum, 1, MPI_FLOAT, MPI_SUM, 0,
-             MPI_COMM_WORLD);
+  if (world_rank == 0) comm_time -= MPI_Wtime();
+  MPI_Reduce(&local_sum, &global_sum, 1, MPI_FLOAT, MPI_SUM, 0, MPI_COMM_WORLD);
+  if (world_rank == 0) comm_time += MPI_Wtime();
 
   // Print the result
   if (world_rank == 0) {
-    printf("Total sum = %f, avg = %f\n", global_sum,
-           global_sum / (world_size * num_elements_per_proc));
+    process_time += MPI_Wtime();
+    int total_elements = world_size * num_elements_per_proc;
+    //printf("Total sum = %f, avg = %f\n", global_sum, global_sum / (world_size * num_elements_per_proc));
+    printf("%d\t%d\t%lf\t%lf\n", world_size, total_elements, process_time, comm_time);
   }
 
   // Clean up
   free(rand_nums);
- 
+
   MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
 }
