@@ -7,7 +7,7 @@
 #include <mpi.h>
 
 /***** globals ****/
-int n = 3;
+int n;
 int me, p;
 
 /**** helpers ****/
@@ -41,6 +41,18 @@ void print_vector(double *v, int row)
     }
     printf("\n");
 }
+
+int get_rand_sign()
+{
+    int sign;
+    if (rand() % 10 > 4) {
+        sign = 1;
+    } else {
+        sign = -1;
+    }
+    return sign;
+}
+
 
 /****** sequential gauss elimination ***********/
 
@@ -229,54 +241,105 @@ double *gauss_cyclic(double **a, double *b)
 
 /***** Test ******/
 
-void gauss_sequential_test()
-{
-    double **a = create_matrix(n, n);
-    double *b = (double*) malloc(n * sizeof(double));
-    a[0][0] = -3; a[0][1] = 2; a[0][2] = -6; b[0] = 6; // -3x + 2y -6z = 6
-    a[1][0] = 5; a[1][1] = 7; a[1][2] = -5; b[1] = 6; // 5x + 7y -5z = 6
-    a[2][0] = 1; a[2][1] = 4; a[2][2] = -2; b[2] = 8; // x + 4y - 2z = 8
-    double* x = gauss_sequential(a, b);
-    print_vector(x, n);
-    printf("expected [-2, 3, 1]\n");
-    free(a[0]);
-    free(a);
-    free(b);
-}
+// void gauss_sequential_test()
+// {
+//     double **a = create_matrix(n, n);
+//     double *b = (double*) malloc(n * sizeof(double));
+//     a[0][0] = -3; a[0][1] = 2; a[0][2] = -6; b[0] = 6; // -3x + 2y -6z = 6
+//     a[1][0] = 5; a[1][1] = 7; a[1][2] = -5; b[1] = 6; // 5x + 7y -5z = 6
+//     a[2][0] = 1; a[2][1] = 4; a[2][2] = -2; b[2] = 8; // x + 4y - 2z = 8
+//     double* x = gauss_sequential(a, b);
+//     print_vector(x, n);
+//     printf("expected [-2, 3, 1]\n");
+//     free(a[0]);
+//     free(a);
+//     free(b);
+// }
+//
+// void gauss_cyclic_test()
+// {
+//     double **a = create_matrix(n, n);
+//     double *b = (double*) malloc(n * sizeof(double));
+//     a[0][0] = -3; a[0][1] = 2; a[0][2] = -6; b[0] = 6; // -3x + 2y -6z = 6
+//     a[1][0] = 5; a[1][1] = 7; a[1][2] = -5; b[1] = 6; // 5x + 7y -5z = 6
+//     a[2][0] = 1; a[2][1] = 4; a[2][2] = -2; b[2] = 8; // x + 4y - 2z = 8
+//
+//     MPI_Init(NULL, NULL);
+//     MPI_Comm_rank(MPI_COMM_WORLD, &me);
+//     MPI_Comm_size(MPI_COMM_WORLD, &p);
+//
+//     if (me == 0) {
+//         print_matrix(a, n, n);
+//         print_vector(b, n);
+//     }
+//     double* x = gauss_cyclic(a, b);
+//     if (me == 0) {
+//         print_vector(x, n);
+//         printf("expected [-2, 3, 1]\n");
+//     }
+//     MPI_Finalize();
+//     free(a[0]);
+//     free(a);
+//     free(b);
+// }
 
-void gauss_cyclic_test()
+// int main(int argc, char** argv)
+// {
+//     if (argc > 1 && strcmp(argv[1], "seq") == 0) {
+//         gauss_sequential_test();
+//     } else {
+//         gauss_cyclic_test();
+//     }
+//     return 0;
+// }
+
+int main(int argc, char** argv)
 {
+    n = atoi(argv[1]); // number of variables for each problem
+    int vars[n];
+    int coef[n];
+    int i, j, count, sum;
+    double process_time = 0.0;
+
     double **a = create_matrix(n, n);
     double *b = (double*) malloc(n * sizeof(double));
-    a[0][0] = -3; a[0][1] = 2; a[0][2] = -6; b[0] = 6; // -3x + 2y -6z = 6
-    a[1][0] = 5; a[1][1] = 7; a[1][2] = -5; b[1] = 6; // 5x + 7y -5z = 6
-    a[2][0] = 1; a[2][1] = 4; a[2][2] = -2; b[2] = 8; // x + 4y - 2z = 8
+
+    // generate random variables and coeficients
+    for (i=0; i<n; i++) {
+        vars[i] = rand() % 100 * get_rand_sign();
+    }
+
+    // generate random coeficients
+    // calculate sum of linear equation
+    for (i=0; i<n; i++) {
+        sum = 0;
+        for (j=0; j<n; j++) {
+            coef[j] = rand() % 100 * get_rand_sign();
+            a[i][j] = coef[j];
+            sum += vars[j] * coef[j];
+        }
+        b[i] = sum;
+    }
 
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &me);
     MPI_Comm_size(MPI_COMM_WORLD, &p);
 
     if (me == 0) {
-        print_matrix(a, n, n);
-        print_vector(b, n);
+        // print_matrix(a, n, n);
+        // print_vector(b, n);
+        process_time -= MPI_Wtime();
     }
     double* x = gauss_cyclic(a, b);
     if (me == 0) {
-        print_vector(x, n);
-        printf("expected [-2, 3, 1]\n");
+        process_time += MPI_Wtime();
+        printf("%d\t%d\t%f\n", p, n, process_time);
+        // print_vector(x, n);
     }
     MPI_Finalize();
     free(a[0]);
     free(a);
     free(b);
-}
 
-int main(int argc, char** argv)
-{
-    if (argc > 1 && strcmp(argv[1], "seq") == 0) {
-        gauss_sequential_test();
-    } else {
-        gauss_cyclic_test();
-    }
     return 0;
 }
