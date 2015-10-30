@@ -5,28 +5,8 @@ mpiexec -np 4 ./fox.o 240 >> fox.result &&
 mpiexec -np 4 ./fox.o 240 >> fox.result &&
 mpiexec -np 4 ./fox.o 240 >> fox.result &&
 mpiexec -np 4 ./fox.o 240 >> fox.result &&
-mpiexec -np 9 ./fox.o 240 >> fox.result &&
-mpiexec -np 9 ./fox.o 240 >> fox.result &&
-mpiexec -np 9 ./fox.o 240 >> fox.result &&
-mpiexec -np 9 ./fox.o 240 >> fox.result &&
-mpiexec -np 9 ./fox.o 240 >> fox.result &&
-mpiexec -np 16 ./fox.o 240 >> fox.result &&
-mpiexec -np 16 ./fox.o 240 >> fox.result &&
-mpiexec -np 16 ./fox.o 240 >> fox.result &&
-mpiexec -np 16 ./fox.o 240 >> fox.result &&
-mpiexec -np 16 ./fox.o 240 >> fox.result &&
 mpiexec -np 4 ./fox.o 480 >> fox.result &&
 mpiexec -np 4 ./fox.o 480 >> fox.result &&
 mpiexec -np 4 ./fox.o 480 >> fox.result &&
 mpiexec -np 4 ./fox.o 480 >> fox.result &&
-mpiexec -np 4 ./fox.o 480 >> fox.result &&
-mpiexec -np 9 ./fox.o 480 >> fox.result &&
-mpiexec -np 9 ./fox.o 480 >> fox.result &&
-mpiexec -np 9 ./fox.o 480 >> fox.result &&
-mpiexec -np 9 ./fox.o 480 >> fox.result &&
-mpiexec -np 9 ./fox.o 480 >> fox.result &&
-mpiexec -np 16 ./fox.o 480 >> fox.result &&
-mpiexec -np 16 ./fox.o 480 >> fox.result &&
-mpiexec -np 16 ./fox.o 480 >> fox.result &&
-mpiexec -np 16 ./fox.o 480 >> fox.result &&
-mpiexec -np 16 ./fox.o 480 >> fox.result
+mpiexec -np 4 ./fox.o 480 >> fox.result

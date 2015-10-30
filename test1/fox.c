@@ -1,5 +1,8 @@
 /* fox.c -- uses Fox's algorithm to multiply two square matrices
  *
+ * Yohanes: modified to read matrix size (n) from cli argument
+ * http://web.mst.edu/~ercal/387/MPI/ppmpi_c/chap07/fox.c
+ *
  * Input:
  *     n: global order of matrices
  *     A,B: the factor matrices

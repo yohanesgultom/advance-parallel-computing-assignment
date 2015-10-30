@@ -5,28 +5,8 @@ mpiexec -np 4 ./cannon.o 360 >> cannon.result &&
 mpiexec -np 4 ./cannon.o 360 >> cannon.result &&
 mpiexec -np 4 ./cannon.o 360 >> cannon.result &&
 mpiexec -np 4 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 360 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 360 >> cannon.result &&
 mpiexec -np 4 ./cannon.o 1440 >> cannon.result &&
 mpiexec -np 4 ./cannon.o 1440 >> cannon.result &&
 mpiexec -np 4 ./cannon.o 1440 >> cannon.result &&
 mpiexec -np 4 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 4 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 9 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 1440 >> cannon.result &&
-mpiexec -np 16 ./cannon.o 1440 >> cannon.result
+mpiexec -np 4 ./cannon.o 1440 >> cannon.result
