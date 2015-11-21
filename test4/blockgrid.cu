@@ -24,10 +24,9 @@ __global__ void kernel3( int *a )
     a[idx] = threadIdx.x;
 }
 
-void printarray(const char* label, int *a, int n)
+void printarray(int *a, int n)
 {
     int i = 0;
-    printf("%s: ", label);
     for (i = 0; i < n; i++) printf("%d ", a[i]);
     printf("\n");
 }
@@ -47,7 +46,7 @@ int main(int argc, char** argv)
     dim3 numBlocks(atoi(argv[3]));
 
     // function kernel1
-    printf("=== blockIdx.x * blockDim.x + threadIdx.x ===\n");
+    printf("=== constant ===\n");
 	int *a_h, *a_d;
     a_h = (int*) malloc(isize);
 	cudaMalloc((void**)&a_d, isize);

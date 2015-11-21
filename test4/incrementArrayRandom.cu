@@ -16,7 +16,14 @@ __global__ void incrementArrayOnDevice(float *a, int N)
     if (idx<N) a[idx] = a[idx]+1.f;
 }
 
-int main(void)
+void printarray(float *a, int n)
+{
+    int i = 0;
+    for (i = 0; i < n; i++) printf("%f ", a[i]);
+    printf("\n");
+}
+
+int main(int argc, char** argv)
 {
     float *a_h, *b_h; // pointers to host memory
     float *a_d; // pointer to device memory
@@ -34,6 +41,7 @@ int main(void)
     cudaMemcpy(a_d, a_h, sizeof(float)*N, cudaMemcpyHostToDevice);
     // do calculation on host
     incrementArrayOnHost(a_h, N);
+    printarray(a_h, N);
     // do calculation on device:
     // Part 1 of 2. Compute execution configuration
     int blockSize = 4;
@@ -43,7 +51,10 @@ int main(void)
     // Retrieve result from device and store in b_h
     cudaMemcpy(b_h, a_d, sizeof(float)*N, cudaMemcpyDeviceToHost);
     // check results
+    printarray(b_h, N);
     for (i=0; i<N; i++) assert(a_h[i] == b_h[i]);
     // cleanup
     free(a_h); free(b_h); cudaFree(a_d);
+
+    return EXIT_SUCCESS;
 }
