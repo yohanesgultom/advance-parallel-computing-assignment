@@ -1,4 +1,4 @@
-// Source adapted from: http://www.programmingsimplified.com/c-program-multiply-matrices
+// author: yohanes.gultom@gmail.com
 #include <stdio.h>
 #include <time.h>
 
