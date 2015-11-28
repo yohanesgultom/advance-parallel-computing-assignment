@@ -1,6 +1,9 @@
 // author: yohanes.gultom@gmail.com
+// partial source: https://gist.github.com/wh5a/4313739
 #include <stdio.h>
 #include <time.h>
+
+#define TILE_WIDTH 10
 
 // create random matrix row-major-format
 float* create_flat_matrix(int row, int col, int max)
@@ -72,11 +75,43 @@ __global__ void mmul_d_thread(float *first, int m, int p, float *second, int q, 
     }
 }
 
+// Compute C = A * B
+__global__ void matrixMultiply(float * A, float * B, float * C,
+  		       int numARows, int numAColumns,
+			       int numBRows, int numBColumns,
+			       int numCRows, int numCColumns) {
+    //@@ Insert code to implement matrix multiplication here
+    __shared__ float ds_M[TILE_WIDTH][TILE_WIDTH];
+    __shared__ float ds_N[TILE_WIDTH][TILE_WIDTH];
+    int bx = blockIdx.x, by = blockIdx.y,
+       tx = threadIdx.x, ty = threadIdx.y,
+       Row = by * TILE_WIDTH + ty,
+       Col = bx * TILE_WIDTH + tx;
+    float Pvalue = 0;
+
+    for (int m = 0; m < (numAColumns-1)/TILE_WIDTH+1; ++m) {
+       if (Row < numARows && m*TILE_WIDTH+tx < numAColumns)
+          ds_M[ty][tx] = A[Row*numAColumns + m*TILE_WIDTH+tx];
+       else
+          ds_M[ty][tx] = 0;
+       if (Col < numBColumns && m*TILE_WIDTH+ty < numBRows)
+          ds_N[ty][tx] = B[(m*TILE_WIDTH+ty)*numBColumns+Col];
+       else
+          ds_N[ty][tx] = 0;
+
+       __syncthreads();
+       for (int k = 0; k < TILE_WIDTH; ++k)
+          Pvalue += ds_M[ty][k] * ds_N[k][tx];
+       __syncthreads();
+    }
+    if (Row < numCRows && Col < numCColumns)
+       C[Row*numCColumns+Col] = Pvalue;
+}
 
 int main(int argc, char** argv)
 {
     if (argc < 6) {
-        printf("insufficient args. for A x B = C, required args: [row num A] [col num A OR row num B] [col num B] [cuda block size] [reps]\n");
+        printf("insufficient args. for A x B = C, required args: [row num A] [col num A OR row num B] [col num B] [cuda block size] [reps] [optimized]\n");
         return EXIT_FAILURE;
     }
 
@@ -89,6 +124,11 @@ int main(int argc, char** argv)
     int nBlocks = (m * n) / blockSize + ((m * n) % blockSize == 0 ? 0 : 1);
     int reps = atoi(argv[5]);
     max = 10;
+    // optimized = ignore blockSize and nBlocks
+    int optimized = (argc >= 7) ? 1:0;
+    //@@ Initialize the optimized grid and block dimensions here
+    dim3 dimGrid((q-1)/TILE_WIDTH+1, (m-1)/TILE_WIDTH+1, 1);
+    dim3 dimBlock(TILE_WIDTH, TILE_WIDTH, 1);
 
     float *first_d, *second_d, *multiply_d;
     float *first, *second, *multiply;
@@ -116,13 +156,14 @@ int main(int argc, char** argv)
 
         if (blockSize <= 1) {
             mmul_d <<< 1, 1 >>> (first_d, m, n, second_d, q, multiply_d);
+        } else if (optimized == 1) {
+            matrixMultiply<<<dimGrid, dimBlock>>>(first_d, second_d, multiply_d, m, n, p, q, m, q);
         } else {
             mmul_d_thread <<< nBlocks, blockSize >>> (first_d, m, n, second_d, q, multiply_d);
         }
 
         cudaMemcpy(multiply, multiply_d, m * q * sizeof(float), cudaMemcpyDeviceToHost);
 
-        // mmul_h(first, m, n, second, q, multiply);
         // printf("multiply:\n");
         // print_flat_matrix(multiply, m, q);
 
@@ -131,6 +172,6 @@ int main(int argc, char** argv)
         total_time = total_time + ((exec_time + ((double)clock())) / CLOCKS_PER_SEC);
         // printf("%d: %.6f\n", i, ((exec_time + ((double)clock())) / CLOCKS_PER_SEC));
     }
-    printf("%d\t%d\t%d\t%d\t%d\t%.6fs\n", m, n, q, blockSize, reps, (total_time / reps));
+    printf("%d\t%d\t%d\t%d\t%d\t%.6f\n", m, n, q, blockSize, reps, (total_time / reps));
     return EXIT_SUCCESS;
 }
