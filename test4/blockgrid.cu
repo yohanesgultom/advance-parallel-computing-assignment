@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     // printarray("before", a_h, N);
     kernel1<<<numBlocks, threadsPerBlock>>>(a_d);
 	cudaMemcpy(a_h, a_d, isize, cudaMemcpyDeviceToHost);
-    printarray("after", a_h, N);
+    printarray(a_h, N);
     cudaFree(a_d);
     free(a_h);
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv)
     // printarray("before", b_h, N);
     kernel2<<<numBlocks, threadsPerBlock>>>(b_d);
     cudaMemcpy(b_h, b_d, isize, cudaMemcpyDeviceToHost);
-    printarray("after", b_h, N);
+    printarray(b_h, N);
     cudaFree(b_d);
     free(b_h);
 
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
     // printarray("before", c_h, N);
     kernel3<<<numBlocks, threadsPerBlock>>>(c_d);
     cudaMemcpy(c_h, c_d, isize, cudaMemcpyDeviceToHost);
-    printarray("after", c_h, N);
+    printarray(c_h, N);
     cudaFree(c_d);
     free(c_h);
 
