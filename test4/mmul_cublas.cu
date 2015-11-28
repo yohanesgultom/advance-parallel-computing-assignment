@@ -127,6 +127,6 @@ int main(int argc, char** argv) {
 		total_time = total_time + (exec_time + ((double)clock())) / CLOCKS_PER_SEC;
 		// printf("%d: %.6f\n", i, ((exec_time + ((double)clock())) / CLOCKS_PER_SEC));
 	}
-	printf("%d\t%d\t%d\t%d\t%.6fs\n", nr_rows_A, nr_cols_A, nr_cols_B, reps, (total_time/reps));
+	printf("%d\t%d\t%d\t%d\t%.6f\n", nr_rows_A, nr_cols_A, nr_cols_B, reps, (total_time/reps));
 	return EXIT_SUCCESS;
 }
