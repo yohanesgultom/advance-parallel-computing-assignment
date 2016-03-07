@@ -1,9 +1,0 @@
-#!/bin/bash
-#SBATCH -J matrix_multiplication_4_job
-#SBATCH -o matrix_multiplication_4_%j.out
-#SBATCH -n 4
-#SBATCH -p normal
-#SBATCH -t 01:00:00
-#SBATCH --mail-user=yohanes.gultom@ui.ac.id
-#SBATCH --mail-type=end
-ibrun ./matrix_multiplication.o matrix_multiplication.txt

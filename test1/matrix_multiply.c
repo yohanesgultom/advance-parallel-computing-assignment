@@ -1,3 +1,7 @@
+/*
+Source: http://sites.google.com/site/heshanhome/resources/MPI_matrix_multiplication.c
+*/
+
 #include "stdio.h"
 #include "stdlib.h"
 #include "mpi.h"
@@ -39,31 +43,20 @@ void multiply_two_arrays(int NRA, int NCA, int NCB, int numworkers, int procid) 
     double tstart,
     tend;
 
-    // mallocs
-    // a = (int **)malloc(NRA * sizeof(int*));
-    // b = (int **)malloc(NCA * sizeof(int*)); // NRB == NCA
-    // c = (int **)malloc(NRA * sizeof(int*)); // NRC == NRA
-    // for(i = 0; i < NRA; i++)
-    // {
-    //   a[i] = (int *)malloc(NCA * sizeof(int));
-    //   c[i] = (int *)malloc(NCB * sizeof(int)); // NCC == NCB
-    // }
-    //
-    // for(i = 0; i < NCA; i++)  // NRB == NCA
-    // {
-    //     b[i]=(int *)malloc(NCB * sizeof(int));
-    // }
 
     /******* master process ***********/
     if (procid == MASTER) {
 
         // inits
         for (i=0; i<NRA; i++)
-        for (j=0; j<NCA; j++)
-        a[i][j]= 1;
+            for (j=0; j<NCA; j++)
+                a[i][j]= 1;
+        // printmatrix(NRA, NCA, a);
+
         for (i=0; i<NCA; i++)
-        for (j=0; j<NCB; j++)
-        b[i][j]= 2;
+            for (j=0; j<NCB; j++)
+                b[i][j]= 2;
+        // printmatrix(NCA, NCB, b);
 
         /* send matrix data to the worker processes */
         tstart = MPI_Wtime();
@@ -92,8 +85,10 @@ void multiply_two_arrays(int NRA, int NCA, int NCB, int numworkers, int procid) 
             MPI_Recv(&c[offset][0],count,MPI_INT,source,mtype,MPI_COMM_WORLD, &status);
         }
 
+        // printmatrix(NRA, NCB, c);
+
         tend = MPI_Wtime();
-        printf("%d\ta[%d][%d] x b[%d][%d]\t%lf\n", numworkers+1, NRA, NCA, NCA, NCB, (tend - tstart));
+        printf("\n%d\ta[%d][%d] x b[%d][%d]\t%lf\n", numworkers+1, NRA, NCA, NCA, NCB, (tend - tstart));
 
     } /* end of master */
 
@@ -124,28 +119,7 @@ void multiply_two_arrays(int NRA, int NCA, int NCB, int numworkers, int procid) 
         MPI_Send(&rows,1,MPI_INT,MASTER,mtype,MPI_COMM_WORLD);
         MPI_Send(&c,rows*NCB,MPI_INT,MASTER,mtype,MPI_COMM_WORLD);
 
-    } /* end of worker */
-
-    // free matrices
-    // for(i = 0; i < NRA; i++)
-    // {
-    //   free(a[i]);
-    //   free(c[i]);
-    //   a[i] = NULL;
-    //   c[i] = NULL;
-    // }
-    // for(i = 0; i < NCA; i++)
-    // {
-    //     free(b[i]);
-    //     b[i] = NULL;
-    // }
-    // free(a);
-    // free(b);
-    // free(c);
-    // a = NULL;
-    // b = NULL;
-    // c = NULL;
-
+    }
 }
 
 int main(int argc, char **argv) {
@@ -155,23 +129,16 @@ int main(int argc, char **argv) {
     numworkers,     /* number of worker processes */
     NRA, NCA, NCB;
 
+    NRA = atoi(argv[1]);
+    NCA = atoi(argv[2]);
+    NCB = atoi(argv[3]);
+
     MPI_Init(&argc, &argv);
     MPI_Comm_rank(MPI_COMM_WORLD, &procid);
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     numworkers = numprocs-1;
 
-    char line[1000]; // read only 1000 char per line
-    char *filename = argv[1];
-
-    FILE *fp = fopen(filename, "r");
-    while (fgets(line, sizeof line, fp)) {
-        if (*line == '#') {
-            continue;
-        } else {
-            sscanf(line, "%d %d %d", &NRA, &NCA, &NCB);
-            multiply_two_arrays(NRA, NCA, NCB, numworkers, procid);
-        }
-    }
+    multiply_two_arrays(NRA, NCA, NCB, numworkers, procid);
 
     MPI_Finalize();
 
